@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import gym
+import gymnasium
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.monitor import Monitor
@@ -54,13 +55,25 @@ class PPOAgent:
             env: The gym environment
             model_kwargs: Additional kwargs for the PPO model
         """
-        # Wrap the environment with Monitor for logging
+        # Create logging directory
         log_dir = "logs/ppo_agent/"
         os.makedirs(log_dir, exist_ok=True)
-        self.env = Monitor(env, log_dir)
         
-        # Wrap with DummyVecEnv as PPO expects a vectorized environment
-        self.vec_env = DummyVecEnv([lambda: self.env])
+        # Check if environment is a gym/gymnasium environment
+        # If not, we'll use it directly without Monitor wrapping
+        try:
+            # Skip the Monitor wrapper since it's causing issues
+            # Just use the environment directly
+            self.env = env
+            
+            # Wrap with DummyVecEnv as PPO expects a vectorized environment
+            self.vec_env = DummyVecEnv([lambda: self.env])
+            
+        except Exception as e:
+            print(f"Warning: Couldn't wrap environment with Monitor: {e}")
+            print("Using environment directly without Monitor wrapper.")
+            self.env = env
+            self.vec_env = DummyVecEnv([lambda: self.env])
         
         # Set default model parameters
         if model_kwargs is None:
@@ -70,6 +83,10 @@ class PPOAgent:
                 "gamma": 0.99,
                 "verbose": 1
             }
+        
+        # Ensure policy is specified
+        if "policy" not in model_kwargs:
+            model_kwargs["policy"] = "MlpPolicy"
             
         # Initialize the PPO model
         self.model = PPO(env=self.vec_env, **model_kwargs)

@@ -50,6 +50,7 @@ def run_q_learning_agent(ticker="AAPL",
         "reward_scale": 1.0,
         "drawdown_penalty": 0.5,
         "trade_penalty": 1.0,
+        "invalid_action_penalty": 10.0
     }
 
     # Split data for training and testing (80% train, 20% test)
@@ -89,6 +90,12 @@ def run_q_learning_agent(ticker="AAPL",
             # Run episode
             while not done:
                 # Select action using epsilon-greedy policy
+                discrete_state = agent.discretize_state(obs)
+                q_values = agent.q_table.get(discrete_state, None)
+                if q_values is not None:
+                    print(f"Step {steps}: Q-values = {q_values}, chosen action = {np.argmax(q_values)}")
+
+                
                 action = agent.act(obs)
                 action_counter[action] += 1
 
@@ -142,6 +149,11 @@ def run_q_learning_agent(ticker="AAPL",
     agent.exploration_rate = 0
     
     while not done:
+        discrete_state = agent.discretize_state(obs)
+        q_values = agent.q_table.get(discrete_state, None)
+        if q_values is not None:
+            print(f"Step {steps}: Q-values = {q_values}, chosen action = {np.argmax(q_values)}")
+
         action = agent.act(obs)
         obs, reward, done, info = eval_env.step(action)
         reward = reward.item() if hasattr(reward, "item") else float(reward)

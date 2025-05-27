@@ -39,11 +39,10 @@ def run_ppo_agent(ticker="AAPL",
     print(f"Loaded {len(df)} data points")
     
     # Split data for training and testing (80% train, 20% test)
-    train_size = int(len(df) * 0.8)
-    train_df = df.iloc[:train_size]
-    test_df = df.iloc[train_size:]
+    train_df = df[:int(len(df) * 0.8)]
+    test_df = df[int(len(df) * 0.8):]
     
-    # Create environment for training
+    # Create the environment
     train_env = TradingEnv(train_df, initial_balance=10000, max_trades=max_trades)
     
     # Initialize PPO agent
@@ -51,8 +50,7 @@ def run_ppo_agent(ticker="AAPL",
         env=train_env,
         model_kwargs={
             "learning_rate": learning_rate,
-            "gamma": gamma,
-            "verbose": 1
+            "gamma": gamma
         }
     )
     

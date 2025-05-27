@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import numpy as np
 import pandas as pd
 from gym import spaces
@@ -38,6 +38,7 @@ class TradingEnv(gym.Env):
             "reward_scale": 1.0,
             "drawdown_penalty": 0.5,
             "trade_penalty": 1.0,
+            "invalid_action_penalty": 10.0
         }
 
     def _get_obs(self):
@@ -141,7 +142,9 @@ class TradingEnv(gym.Env):
             done = True
         
         # Calculate base reward: change in portfolio value
-        base_reward = (portfolio_value - self.initial_balance) * self.reward_config.get("reward_scale", 1.0)
+        #base_reward = (portfolio_value - self.initial_balance) * self.reward_config.get("reward_scale", 1.0)
+        
+        base_reward = (portfolio_value - self.initial_balance) * 2.0
 
         # Drawdown penalty (scaled)
         drawdown_penalty = self.current_drawdown * self.reward_config.get("drawdown_penalty", 0.0)
@@ -152,8 +155,28 @@ class TradingEnv(gym.Env):
             trades_over_limit = self.trade_count - self.max_trades
             trading_penalty = trades_over_limit * self.reward_config.get("trade_penalty", 0.0)
 
+        # Optional profit signal for SELLs
+        trade_profit = 0
+        if info['trade_type'] == 'SELL':
+            last_trade = self.trades[-2] if len(self.trades) >= 2 else None
+            if last_trade and last_trade['type'] == 'BUY':
+                trade_profit = price - last_trade['price']
+
+
+        # Penalize invalid actions
+        if (action == 2 and self.position == 1) or (action == 0 and self.position == 0):
+            reward -= self.reward_config.get("invalid_action_penalty", 10)
+            info["invalid_action_penalty_applied"] = True
+        else:
+            info["invalid_action_penalty_applied"] = False
+
         # Final reward
-        reward = base_reward - drawdown_penalty - trading_penalty
+        reward = (
+            trade_profit * 10
+            + base_reward
+            - drawdown_penalty
+            - trading_penalty
+        )
         
         info['base_reward'] = base_reward
         info['drawdown_penalty'] = drawdown_penalty

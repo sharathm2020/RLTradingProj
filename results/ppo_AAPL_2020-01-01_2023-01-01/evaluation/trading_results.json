@@ -1,0 +1,9 @@
+{
+    "initial_balance": 10000,
+    "final_balance": 10000,
+    "final_portfolio_value": 10000.0,
+    "return_percentage": 0.0,
+    "max_drawdown": 0,
+    "trade_count": 0,
+    "trades": []
+}

@@ -40,7 +40,8 @@ class QLearningAgent:
         self.num_bins = 10
         
         # Initialize Q-table as a dictionary with defaultdict (for unseen states)
-        self.q_table = defaultdict(lambda: np.zeros(self.action_space.n))
+        self.q_table = defaultdict(lambda: np.array([0.1, 0.1, 0.1]))
+
         
         # Training stats
         self.training_rewards = []
