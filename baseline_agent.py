@@ -47,7 +47,8 @@ def run_baseline_agent(ticker="AAPL", start="2020-01-01", end="2023-01-01", epis
             action = env.action_space.sample()
             
             # Take step
-            obs, reward, done, info = env.step(action)
+            obs, reward, terminated, truncated, info = env.step(action)
+            done = terminated or truncated
             reward = reward.item() if hasattr(reward, "item") else float(reward)
             
             total_reward += reward

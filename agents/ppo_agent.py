@@ -1,13 +1,9 @@
 import os
 import numpy as np
-import gym
-import gymnasium
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv
-from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import BaseCallback
 import matplotlib.pyplot as plt
-import pandas as pd
 
 class CustomCallback(BaseCallback):
     """

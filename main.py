@@ -10,7 +10,7 @@ def main():
     parser.add_argument('--ticker', type=str, default='AAPL', help='Stock ticker symbol')
     parser.add_argument('--start', type=str, default='2020-01-01', help='Start date for data')
     parser.add_argument('--end', type=str, default='2023-01-01', help='End date for data')
-    parser.add_argument('--episodes', type=int, default=1, help='Number of episodes to run (for baseline and Q-learning)')
+    parser.add_argument('--episodes', type=int, default=1000, help='Number of episodes to run (for baseline and Q-learning)')
     parser.add_argument('--timesteps', type=int, default=100000, help='Number of timesteps to train (for PPO)')
     parser.add_argument('--balance', type=float, default=10000, help='Initial balance')
     parser.add_argument('--max_trades', type=int, default=50, help='Maximum trades before penalty')
@@ -21,6 +21,8 @@ def main():
     parser.add_argument('--eval_only', action='store_true', help='Only run evaluation (no training)')
     parser.add_argument('--lr', type=float, default=0.0003, help='Learning rate')
     parser.add_argument('--gamma', type=float, default=0.99, help='Discount factor for future rewards')
+    parser.add_argument('--eval-only', action='store_true', help='Run evaluation only (no training)')
+    parser.add_argument('--model-path', type=str, default=None, help='Path to pre-trained model for evaluation')
     
     args = parser.parse_args()
     
@@ -47,16 +49,22 @@ def main():
             eval_only=args.eval_only
         )
     elif args.mode == 'ppo':
-        # Run PPO agent
+        from agents.ppo_runner import run_ppo_agent
+        
+        # Set model path if not provided but eval-only is requested
+        model_path = args.model_path
+        if args.eval_only and model_path is None:
+            # Use the most recent model from results directory
+            model_path = f"results/ppo_{args.ticker}_{args.start}_{args.end}/ppo_final.zip"
+        
         run_ppo_agent(
             ticker=args.ticker,
             start=args.start,
             end=args.end,
             total_timesteps=args.timesteps,
-            max_trades=args.max_trades,
             learning_rate=args.lr,
             gamma=args.gamma,
-            load_model=args.load_model,
+            load_model=model_path,
             eval_only=args.eval_only
         )
     else:

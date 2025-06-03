@@ -2,11 +2,19 @@ import yfinance as yf
 import pandas as pd
 
 def load_stock_data(ticker="AAPL", start="2022-01-01", end="2023-01-01"):
-    df = yf.download(ticker, start=start, end=end)
+    print(f"[INFO] Attempting to download data for {ticker} from {start} to {end}")
 
-    # Simple moving averages with pandas
-    df['SMA_50'] = df['Close'].rolling(window=50).mean()
-    df['SMA_200'] = df['Close'].rolling(window=200).mean()
+    try:
+        df = yf.download(ticker, start=start, end=end, threads=False)
+        print(f"[INFO] Downloaded {len(df)} rows.")
 
-    df.dropna(inplace=True)
-    return df
+        if df.empty:
+            print(f"[WARNING] No data found for {ticker}.")
+            return pd.DataFrame()
+
+        print(f"[INFO] Data after cleaning has {len(df)} rows.")
+        return df
+
+    except Exception as e:
+        print(f"[ERROR] Failed to download data for {ticker}: {e}")
+        return pd.DataFrame()
