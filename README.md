@@ -69,6 +69,10 @@ This project implements a sophisticated reinforcement learning trading agent usi
 ```bash
 pip install gymnasium stable-baselines3 yfinance pandas numpy matplotlib torch
 ```
+or
+```bash
+pip install -r requirements.txt"
+```
 
 ### Training a New Agent
 ```bash
